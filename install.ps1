@@ -20,11 +20,20 @@
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('dsh', 'claude', 'codex')]
     [string[]]$Only
 )
 
 $ErrorActionPreference = 'Stop'
+
+# Validated by hand, not with [ValidateSet]: that attribute breaks `irm <url> | iex`,
+# which is the one-liner install documented in the README.
+$validTargets = 'dsh', 'claude', 'codex'
+if ($Only) {
+    $unknown = @($Only | Where-Object { $validTargets -notcontains $_ })
+    if ($unknown.Count -gt 0) {
+        throw "unknown target: $($unknown -join ', ') (use one of: $($validTargets -join ' '))"
+    }
+}
 
 # Where to fetch SKILL.md from when this script runs without the repo next to it,
 # for example:  irm https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/install.ps1 | iex
