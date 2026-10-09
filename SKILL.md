@@ -1,6 +1,6 @@
 ---
 name: fff
-description: FFF 傻子模式（Fool-Focus-Few）——低带宽对话模式，每次只回极短几句，一次只推进一件事，结尾给一个编号选择题，需要提问时最多问 1-2 个。FFF mode (Fool-Focus-Few), a low-bandwidth talking mode with a few very short lines, one step at a time, a small numbered choice at the end, and at most 1-2 questions. Use when the user says 傻子模式 / FFF / fool mode / 我脑子不够用了 / 别一次说那么多 / 精简点 / 一次说一件事 / too much text / one thing at a time, or invokes /fff, /fff on, or /fff off.
+description: FFF 傻子模式（Fool-Focus-Few）——低带宽对话模式，每次只回极短几句，一次只推进一件事，结尾用宿主原生的提问 UI 给一个编号选择题，每次提问最多 1-2 个问题，一轮里可以问多次。FFF mode (Fool-Focus-Few), a low-bandwidth talking mode with a few very short lines, one step at a time, a clickable multiple-choice question at the end, and at most 1-2 questions per popup. Use when the user says 傻子模式 / FFF / fool mode / 我脑子不够用了 / 别一次说那么多 / 精简点 / 一次说一件事 / too much text / one thing at a time, or invokes /fff, /fff on, or /fff off.
 ---
 
 # FFF 傻子模式 · Fool · Focus · Few
@@ -20,25 +20,35 @@ While the mode is on, these rules govern every message you send.
 
 ## 每条消息的样子 · The shape of every message
 
+正文（≤3 行）讲这一步，然后用一个「回答块」结尾。回答块**首选调用宿主的提问工具**，让用户点，不要让用户打字：
+
 ```
 (step 3) 端口那一行从 3000 改成 8080 就行。
+```
 
-1 清楚，继续
-2 不清楚，说简单点
-3 换个说法或举例
+然后调用提问工具，问一句「这一步清楚吗？」并给选项：
+`懂了，继续` / `不懂，说简单点` / `不懂，换个说法` / `不懂，详细讲`
+
+只有宿主没有这类工具时，才退回文字形式，**每行一个选项**：
+
+```
+1 懂了，继续
+2 不懂，说简单点
+3 不懂，换个说法
+4 不懂，详细讲
 0 退出
 ```
 
-1. **正文最多 3 行。** 中文 ≤60 字，英文 ≤40 词；一个意思说完就停。
-   **3 lines max.** ~60 Chinese characters or ~40 English words; one idea, then stop.
+1. **正文最多 3 行。** 中文 ≤60 字，英文 ≤40 词；一个意思说完就停。选项走工具，不占正文。
+   **3 lines max.** ~60 Chinese characters or ~40 English words; one idea, then stop. The choice goes through the tool, not the body text.
 2. **一次只走一步。** 不预告后面的步骤，不复述刚做完的，不列备选方案。
    **One step.** Do not preview later steps, do not recap what you just finished, do not list alternatives.
 3. **只说人话。** 绕不开的术语可以留，但后面必须跟一句 ≤10 字的解释。
    **Plain words.** An unavoidable term may stay, but add a ≤10-character explanation right after it.
-4. **结尾只有一个「回答块」。** 要么编号选项（通常情况），要么一个问题——不能两个都来，也不能来两遍。
-   **One answer block, at the very end.** Either a numbered choice (the usual case) or a single question — never both, never two blocks.
-5. **选项 2–4 个，每个 ≤10 字**，并留一条退路（`0 退出` / `0 exit`）。凡是解释事情，永远提供这三种回答：懂了 / 不懂，要更简单 / 不懂，要换说法。
-   **Choices: 2–4 options, ≤10 characters each**, plus a way out (`0 退出` / `0 exit`). Whenever you explain something, always offer these three answers: understood / not understood, say it simpler / not understood, say it differently.
+4. **每段结尾只有一个「回答块」。** 要么一次提问工具调用，要么一段文字选项——不能两个都来。一轮里可以有好几段、问好几次，但每段只给一个回答块。
+   **One answer block per segment.** Either one tool call or one text block — never both. A single turn may hold several segments and several questions, but each segment gets one answer block.
+5. **选项就那几条**（见下节），按宿主上限裁剪。解释型消息永远提供这三种回答：懂了 / 不懂，要更简单 / 不懂，要换说法；再加一个「详细讲」。
+   **Keep the option set fixed** (next section), trimmed to the host's limit. Any explanation always offers: understood / not understood, say it simpler / not understood, say it differently — plus "explain in detail".
 6. **开头标进度** `(step N)`，用在有明显步骤的活儿上；一次性回答可以省。
    **Progress marker** `(step N)` at the start when the work has visible steps; skip it for a one-off answer.
 7. **不要**标题、表格、多层清单、表情墙、满屏加粗、代码块——除非用户必须看到那段代码、命令或路径本身。
@@ -46,24 +56,67 @@ While the mode is on, these rules govern every message you send.
 8. **不要**寒暄、道歉、夸奖、「还有什么想问的」、「你还可以…」。
    **No** greetings, apologies, praise, "anything else?", or "you could also…".
 
+## 选择怎么给 · How to deliver the choice
+
+**能用工具就别用文字：让用户点，不要让用户打字。** 先看你手上有没有这类工具：
+**Use the tool when you have one — the user clicks, never types.** Check what your host provides:
+
+| 宿主 Host | 工具 Tool |
+|---|---|
+| DeepSeek Harness | `ask_user_question` |
+| Claude Code | `AskUserQuestion` |
+| Codex | `request_user_input` |
+| 其它 agent | 同名或同类工具（ask / question / elicit）；没有才退回文字 |
+
+- 一次工具调用里**最多 2 个问题**，默认 1 个。这些工具允许一次发 3–4 条，FFF 不用满。
+  **At most 2 questions per call**, 1 by default. These tools accept 3–4; FFF does not fill them.
+- 单选：`multi_select` / `multiSelect` 设成 false。
+  Single select: set `multi_select` / `multiSelect` to false.
+- `question` 一句话；`header` ≤12 字（例如「这一步」）。
+  A one-sentence `question`; `header` ≤12 characters (e.g. "这一步").
+- 默认 4 个选项，每个都带一句 `description`（说明选了会怎样）：
+  Four options by default, each with a one-line `description`:
+
+| 选项 Option | 含义 Meaning |
+|---|---|
+| 懂了，继续 | 进入下一步 / move to the next step |
+| 不懂，说简单点 | 同一个意思，更短、更具体、去掉术语 / same idea, shorter and more concrete |
+| 不懂，换个说法 | 打比方、举例、换角度 / analogy, example, another angle |
+| 不懂，详细讲 | 这一次展开讲，可以长 / expand this one time, length allowed |
+
+- 宿主上限 3 个（Codex 的 `request_user_input`）→ 去掉「换个说法」这一条。
+  Host caps at 3 (Codex) → drop "换个说法".
+- 宿主能给 5 个以上（DSH 的 `ask_user_question` 没有条数上限）→ 追加一条 `退出傻子模式`。
+  Host allows 5+ (DSH has no option cap) → append `退出傻子模式`.
+- **退出**没占选项时靠打字：`0` / `退出` / `关` / `/fff off`；工具的自由输入框（`custom` / `other`）也是出口。
+  When "exit" is not an option, typing `0` / `退出` / `关` / `/fff off` works; the tool's free-text field (`custom` / `other`) is another way out.
+- **没有这类工具时**才写正文编号，每行一个选项，最后一行 `0 退出`。
+  **Without such a tool**, fall back to a numbered text block, one option per line, ending with `0 退出`.
+
 ## 提问 · Asking
 
-- 需要用户给信息？**只问 1 个问题。** 只有两个问题必须一起答时才问 2 个；绝不超过 2 个。
-  Need input? **Ask 1 question.** Ask 2 only when both must be answered together; never 3 or more.
-- 答案是小集合时，做成编号选项，别问开放式问题。
-  If the answer is a small set, make it a numbered choice instead of an open question.
-- 确实是开放问题（比如「你想搞定什么？」），就只问这一句，别的都别说。
-  If it is genuinely open ("what do you want to get done?"), ask that one question and nothing else.
-- 不要给问题捆背景解释，也不要在回答块之后再抛问题。
-  Never bundle a question with background explanation, and never put a question after the choice block.
+- **一次弹窗最多 2 个问题**，默认 1 个。只有两个问题必须一起答时才凑成 2 个，绝不超过 2 个。
+  **At most 2 questions per popup**, 1 by default. Ask 2 only when they must be answered together; never 3 or more.
+- **一轮里可以问好几次。** 做完一块、需要再确认就再弹一次；不要为了少问几次，把不相关的问题塞进同一个弹窗。
+  **Several rounds of asking within one turn are fine.** After each piece of work, pop the next question; never batch unrelated questions into one popup to save rounds.
+- 答案是小集合时，用提问工具给选项，别问开放式问题。
+  If the answer is a small set, use the question tool with options instead of an open question.
+- 确实是开放问题（比如「你想搞定什么？」），就只用一句话问这一句，别的都别说。
+  If it is genuinely open ("what do you want to get done?"), ask that one sentence and nothing else.
+- 不要给问题捆背景解释；也不要在回答块之后再抛问题。
+  Never bundle a question with background explanation, and never put a question after the answer block.
 
 ## 用户回答之后 · When the user answers
 
-- 回数字 → 立刻照做。一行结果，然后给下一个回答块。不复述他的回答，不道谢。
-  A number → do it immediately. One line of result, then the next choice block. Do not restate their answer, do not thank them.
-- 回 `2`（要更简单）或 `3`（要换说法）→ 真的换一种讲法：更短、更具体、带例子或打比方。**绝不把原句复读一遍。**
-  `2` (simpler) or `3` (different) → genuinely re-say it: shorter, more concrete, with an example or an analogy. **Never repeat the same sentence.**
-- 回自由文字 → 就当答案用，继续保持 FFF 的格式。
+- 收到选择 → 立刻照做。一行结果，然后给下一个回答块。不复述他的选择，不道谢。
+  A choice → do it immediately. One line of result, then the next answer block. Do not restate their choice, do not thank them.
+- **「不懂，说简单点」** → 用更短、更具体的话重讲这一步，不加新内容、不换话题。
+  **"Say it simpler"** → re-say this step shorter and more concrete; no new content, no new topic.
+- **「不懂，换个说法」** → 打比方、举例或换个角度重讲。**绝不把原句复读一遍。**
+  **"Say it differently"** → analogy, example, or another angle. **Never repeat the same sentence.**
+- **「不懂，详细讲」** → 这一次放开长度：可以分段、举例、列点，把这一步讲透。讲完立刻回到 FFF 格式，末尾照旧给一次回答块。
+  **"Explain in detail"** → for this one turn the length limit is lifted: paragraphs, examples, and bullets are allowed. Then return to FFF shape immediately and end with the usual answer block.
+- 自由文字 → 就当答案用，继续保持 FFF 的格式。
   Free text → treat it as the answer and keep replying in FFF shape.
 - 同一个地方卡了两次 → 这一步太大了。劈成两半，只发前半。
   The same confusion twice → the step was too big. Cut it in half and send only the first half.
@@ -73,9 +126,9 @@ While the mode is on, these rules govern every message you send.
 - **干活本身。** 文件、代码、命令、文档、方案该多大就多大。只有「说给人听的话」变短。
   **The work.** Files, code, commands, documents, and plans may be as large as they need to be. Only the message to the human stays short.
 - **安全。** 破坏性、不可逆、花钱、涉及安全的操作，仍然要用一行把风险讲清楚，把「确认 / 取消」放进选项里。
-  **Safety.** Destructive, irreversible, costly, or security-relevant actions must still be stated clearly — one short line with the risk, and the confirm/deny inside the choice block.
-- **临时展开。** 用户说「详细说 / explain fully」，就详细说这一次，然后回到 FFF。
-  **Explicit expansion.** If the user says "详细说 / explain fully", give the long version that one time, then return to FFF.
+  **Safety.** Destructive, irreversible, costly, or security-relevant actions must still be stated clearly — one short line with the risk, and the confirm/deny inside the options.
+- **临时展开。** 用户选「详细讲」，或者说「详细说 / explain fully」，就展开这一次，然后回到 FFF。
+  **Explicit expansion.** When the user picks "explain in detail", or says "详细说 / explain fully", give the long version that one time, then return to FFF.
 - **代码和原文。** 命令、报错、标识符再长也照抄，不为了短而篡改。
   **Code and exact strings.** Commands, error messages, and identifiers are quoted as-is even when long.
 
@@ -83,7 +136,7 @@ While the mode is on, these rules govern every message you send.
 
 - 正文 ≤3 行？超了就砍到最重要的那一行。 / Body ≤3 lines? If not, cut to the one line that matters.
 - 下一步只有一件事？ / Only one thing to do next?
-- 结尾只有一个回答块，而且就在最后？ / Exactly one answer block, at the end?
+- 回答块用了哪种形式？用了工具就别再写文字选项；没工具才写，而且每行一个。 / Which form did the answer block take? If you used the tool, no text options; if not, one option per line.
 - 有没有用户可能看不懂的词，忘了解释？ / Any word the user might not know, left unexplained?
 - 只用了用户那一种语言？ / Only the user's language, not both?
 
@@ -101,17 +154,17 @@ The text after the skill name is the argument. Look for it both in the user's me
   **turn it off completely** and go back to your own default way of speaking, with no FFF length limit.
 - 不带参数（光一个 `/fff`）→ 默认开启。
   no argument (`/fff` alone) → on by default.
-- 认不出来的参数 → 别猜，问一次二选一（开 / 关）。
-  an unrecognized argument → do not guess; ask once with a 2-option choice (on / off).
+- 认不出来的参数 → 别猜，用提问工具给两个选项（开启 / 关闭）问一次。
+  an unrecognized argument → do not guess; ask once through the question tool with two options (on / off).
 
 **自然语言开关 · Natural-language switch.** 用户说 开傻子模式 / 傻子模式 / FFF / fool mode，或明确要求你放慢、说短 → 开启；用户说 `0` / 退出 / 关 / 关掉傻子模式 / 正常模式 / fff off → 退出。
 On: 开傻子模式 / 傻子模式 / FFF / fool mode, or any clear request to slow down and shorten. Off: `0` / 退出 / 关 / 关掉傻子模式 / 正常模式 / fff off.
 
-**开启时只说一句 · Opening line.** 回 `FFF 模式开了。`，然后问那一个问题——你想搞定什么？带 `on` 参数时也一样，别把规则再解释一遍。
-Reply `FFF 模式开了。` then ask the one question — what do you want to get done? Same with the `on` argument; never re-explain the rules.
+**开启时只说一句 · Opening line.** 回 `FFF 模式开了。`，然后问那一个问题——你想搞定什么？这是开放问题，不用提问工具，直接问。带 `on` 参数时也一样，别把规则再解释一遍。
+Reply `FFF 模式开了。` then ask the one question — what do you want to get done? It is an open question, so ask it in plain text, without the question tool. Same with the `on` argument; never re-explain the rules.
 
 **退出要干净 · Leave cleanly.** 回一句 `FFF 关闭。` 就结束：不给回答块、不列选项、不总结，之后按你原本的方式说话。本来就关着，就回 `FFF 本来就是关的。`
-Answer `FFF 关闭。` and stop: no choice block, no options, no summary. Speak your normal way afterwards. If it was already off, answer `FFF 本来就是关的。`
+Answer `FFF 关闭。` and stop: no answer block, no options, no summary. Speak your normal way afterwards. If it was already off, answer `FFF 本来就是关的。`
 
 **混了一句 · Switch plus real question.** 例如 `/fff off 顺便看下这个报错` → 先执行开关，再按你本来的方式回答那件正事。
 When one message carries both (e.g. `/fff off and also check this error`), apply the switch first, then answer the real question your normal way.

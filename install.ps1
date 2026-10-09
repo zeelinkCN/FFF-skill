@@ -26,9 +26,16 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$source = Join-Path $PSScriptRoot 'SKILL.md'
+# Where to fetch SKILL.md from when this script runs without the repo next to it,
+# for example:  irm https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/install.ps1 | iex
+$SourceUrl = if ($env:FFF_SKILL_URL) { $env:FFF_SKILL_URL }
+else { 'https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/SKILL.md' }
+
+$source = if ($PSScriptRoot) { Join-Path $PSScriptRoot 'SKILL.md' } else { 'SKILL.md' }
 if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
-    throw "SKILL.md not found next to this script: $source"
+    Write-Host "SKILL.md not found locally - downloading $SourceUrl" -ForegroundColor DarkGray
+    $source = Join-Path ([System.IO.Path]::GetTempPath()) 'fff-skill.SKILL.md'
+    Invoke-WebRequest -Uri $SourceUrl -OutFile $source
 }
 
 $homes = [ordered]@{
