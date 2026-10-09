@@ -12,7 +12,7 @@
 |---|---|---|
 | **Fool** | 傻子 | 说人话。术语必须紧跟一句 ≤10 字的解释 |
 | **Focus** | 专注 | 一次一件。每条消息只推进一个步骤，不预告后面的 |
-| **Few** | 少 | 正文 ≤ 3 行；**每次弹窗最多 1–2 个问题**（一轮里可以弹好几次）；选项最多 4 个 |
+| **Few** | 少 | 正文 ≤ 3 行；**不需要你拍板就不问**；每次弹窗最多 1–2 个问题（一轮可以弹多次）；选项最多 4 个 |
 
 ## 打开之后长这样
 
@@ -57,16 +57,16 @@ AI   就是让电脑自己定时打开这个脚本，不用你点。
 Windows PowerShell：
 
 ```powershell
-irm https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/install.ps1 | iex
+irm https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@v1.0.1/install.ps1 | iex
 ```
 
 macOS / Linux / WSL：
 
 ```sh
-curl -fsSL https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/install.sh | sh
+curl -fsSL https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@v1.0.1/install.sh | sh
 ```
 
-走 jsDelivr 镜像是因为 GitHub 官方的 `raw.githubusercontent.com` 在国内经常连不上。网络通畅时，把 `https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/` 换成 `https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/` 就是官方地址——脚本内部去取 `SKILL.md` 时也会自己按「官方 → 镜像」的顺序重试。
+走 jsDelivr 镜像是因为 GitHub 官方的 `raw.githubusercontent.com` 在国内经常连不上；地址里的 `@v1.0.1` 是一个 tag，内容是固定的，不会被 CDN 缓存成旧版本。想跟最新就把它换成 `@main`，网络通畅时也可以整体换成官方地址 `https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/`——脚本内部去取 `SKILL.md` 时也会自己按「官方 → 镜像」的顺序重试。
 
 用 git 克隆也是一行：
 
@@ -133,6 +133,7 @@ FFF 只压缩**说给人看的话**，不压缩工作本身：
 ## 为什么这么设计
 
 - **能点就别打字**：把「我该怎么回」从你脑子里拿掉。用各家 agent 原生的提问 UI，而不是让模型在正文里写 `1 2 3`——后者会被 markdown 压成一行，还得你动手敲。
+- **没分支就不问**：进度汇报、收尾总结这类「你回什么都一样」的消息，直接一句话结束，不给你一个只能点「好」的按钮。判断法写在规则里：**用户回答什么都一样，就没有分支，别问。**
 - **四个固定答案**：懂 / 不懂要更简单 / 不懂要换说法 / 不懂要详细讲。分开这几种「不懂」很重要——第一种要把话拆小，第二种要换比喻，第三种是真的想深入，那就该放开长度，而不是硬憋在 3 行里。
 - **工具与文字二选一**：规则里写死了「回答块只有一种形式」，避免模型既弹窗又在正文里列一遍选项。
 - **一次只推进一件事**：长篇回复的真正伤害不是字数，是你被迫同时处理多个待决事项。
