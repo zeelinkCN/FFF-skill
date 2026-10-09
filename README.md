@@ -1,5 +1,7 @@
 # FFF 傻子模式 · Fool · Focus · Few
 
+**中文** | [English](README.en.md)
+
 > 跟 AI 聊几轮，人脑就过载了。FFF 把 AI 的输出压成「一口一块」。
 
 一个跨工具的 Agent Skill。装一次，**Claude Code / Codex / DeepSeek Harness** 都能用 `/fff` 打开。
@@ -146,7 +148,8 @@ FFF 只压缩**说给人看的话**，不压缩工作本身：
 ```
 fff-skill/
 ├── SKILL.md      规则本体（唯一需要维护的文件）
-├── README.md
+├── README.md     中文
+├── README.en.md  英文
 ├── LICENSE
 ├── install.ps1   Windows 安装脚本
 └── install.sh    macOS / Linux 安装脚本
@@ -158,14 +161,4 @@ MIT
 
 ---
 
-## English
-
-**FFF mode — Fool · Focus · Few.** A low-bandwidth talking mode for a tired human brain: reply in at most 3 short lines, advance exactly one step per message, and end every message with a small numbered choice. When the agent needs input, it asks 1 question (2 only when they must be answered together) — never a wall of questions.
-
-- **Fool** — plain words; any unavoidable term gets a short explanation.
-- **Focus** — one thing at a time.
-- **Few** — few words, few questions, few options.
-
-Install: run `./install.ps1` (Windows) or `./install.sh` (macOS/Linux), which copies `SKILL.md` into `<home>/skills/fff/` for DeepSeek Harness, Claude Code, and Codex. Or copy it manually — it follows the [Agent Skills](https://agentskills.io) open standard, so any compatible tool can load it.
-
-Use: `/fff` to turn it on, `1` understood / `2` say it simpler / `3` say it differently / `0` exit. It constrains only what the agent says to you — never the work itself, and never safety warnings.
+**English?** → [README.en.md](README.en.md)
