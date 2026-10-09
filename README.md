@@ -52,23 +52,23 @@ AI   就是让电脑自己定时打开这个脚本，不用你点。
 
 ## 安装
 
-### 一键（推荐）
+### 一键（一行搞定下载 + 安装）
 
 Windows PowerShell：
 
 ```powershell
-irm https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/install.ps1 | iex
+irm https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/install.ps1 | iex
 ```
 
-macOS / Linux：
+macOS / Linux / WSL：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/install.sh | sh
+curl -fsSL https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/install.sh | sh
 ```
 
-脚本自己会把 `SKILL.md` 拉下来，然后装到本机存在的每一个 agent 目录——下载和安装就这一行。
+走 jsDelivr 镜像是因为 GitHub 官方的 `raw.githubusercontent.com` 在国内经常连不上。网络通畅时，把 `https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/` 换成 `https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/` 就是官方地址——脚本内部去取 `SKILL.md` 时也会自己按「官方 → 镜像」的顺序重试。
 
-不想走管道的话，用 git 也是一行：
+用 git 克隆也是一行：
 
 ```powershell
 git clone https://github.com/zeelinkCN/FFF-skill.git "$env:TEMP\FFF-skill"; & "$env:TEMP\FFF-skill\install.ps1"

@@ -11,21 +11,35 @@
 set -eu
 
 # Where to fetch SKILL.md from when this script runs without the repo next to it,
-# for example:  curl -fsSL https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/install.sh | sh
-src_url="${FFF_SKILL_URL:-https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/SKILL.md}"
+# for example:  curl -fsSL https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/install.sh | sh
+# Official raw first, then the jsDelivr mirror (raw is often unreachable from CN networks).
+if [ -n "${FFF_SKILL_URL:-}" ]; then
+    src_urls="$FFF_SKILL_URL"
+else
+    src_urls="https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/SKILL.md
+https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/SKILL.md"
+fi
 
 src="$(cd "$(dirname "$0")" 2>/dev/null && pwd || echo .)/SKILL.md"
 if [ ! -f "$src" ]; then
-    echo "SKILL.md not found locally - downloading $src_url" >&2
-    src="$(mktemp 2>/dev/null || echo /tmp/fff-skill.SKILL.md)"
-    if command -v curl >/dev/null 2>&1; then
-        curl -fsSL "$src_url" -o "$src"
-    elif command -v wget >/dev/null 2>&1; then
-        wget -qO "$src" "$src_url"
-    else
-        echo "need curl or wget to download SKILL.md" >&2
+    tmp="$(mktemp 2>/dev/null || echo /tmp/fff-skill.SKILL.md)"
+    ok=""
+    for url in $src_urls; do
+        echo "SKILL.md not found locally - downloading $url" >&2
+        if command -v curl >/dev/null 2>&1; then
+            if curl -fsSL --connect-timeout 15 --max-time 120 "$url" -o "$tmp"; then ok=1; break; fi
+        elif command -v wget >/dev/null 2>&1; then
+            if wget -qO "$tmp" "$url"; then ok=1; break; fi
+        else
+            echo "need curl or wget to download SKILL.md" >&2
+            exit 1
+        fi
+    done
+    if [ -z "$ok" ]; then
+        echo "could not download SKILL.md from any mirror" >&2
         exit 1
     fi
+    src="$tmp"
 fi
 
 src_hash() { cksum <"$1" | awk '{print $1"-"$2}'; }
