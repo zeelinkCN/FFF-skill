@@ -59,18 +59,16 @@ AI   就是让电脑自己定时打开这个脚本，不用你点。
 Windows PowerShell：
 
 ```powershell
-irm https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@v1.0.3/install.ps1 | iex
+irm https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/install.ps1 | iex
 ```
 
 macOS / Linux / WSL：
 
 ```sh
-curl -fsSL https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@v1.0.3/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/install.sh | sh
 ```
 
-走 jsDelivr 镜像是因为 GitHub 官方的 `raw.githubusercontent.com` 在国内经常连不上；地址里的 `@v1.0.3` 是一个 tag，内容是固定的，不会被 CDN 缓存成旧版本。想跟最新就把它换成 `@main`。
-
-脚本拿到自己之后，还要再去取 `SKILL.md`：这一步走 **GitHub API**（`api.github.com`，国内通常可达），失败才退回官方 raw 地址。没用 jsDelivr 当正文源，是因为它遇到 `.md` 只会 301 跳回 raw，等于没绕开。
+脚本自己会把 `SKILL.md` 从仓库拉下来——下载和安装就这一行。
 
 用 git 克隆也是一行：
 

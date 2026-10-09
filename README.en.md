@@ -59,18 +59,16 @@ Picking "in detail" lifts the length limit for that one answer, then it drops ba
 Windows PowerShell:
 
 ```powershell
-irm https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@v1.0.3/install.ps1 | iex
+irm https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/install.ps1 | iex
 ```
 
 macOS / Linux / WSL:
 
 ```sh
-curl -fsSL https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@v1.0.3/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/install.sh | sh
 ```
 
-The jsDelivr mirror is there because GitHub's own `raw.githubusercontent.com` is frequently unreachable from mainland China; `@v1.0.3` is a tag, so the content is fixed and cannot be cached into an older version. Swap it for `@main` to follow the latest.
-
-Once the script has itself, it still needs `SKILL.md`: that download goes through the **GitHub API** (`api.github.com`, usually reachable from China) and falls back to the official raw URL. jsDelivr is not used for the body because it only 301s `.md` files back to raw, which defeats the point.
+The script fetches `SKILL.md` from the repository itself — download and install in one line.
 
 `git clone` works as a one-liner too:
 

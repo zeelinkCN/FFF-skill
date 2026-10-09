@@ -36,38 +36,15 @@ if ($Only) {
 }
 
 # Where to fetch SKILL.md from when this script runs without the repo next to it,
-# for example:  irm https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@v1.0.3/install.ps1 | iex
-# GitHub API first: raw.githubusercontent.com is blocked on many CN networks, and jsDelivr
-# merely 301s *.md back to raw. The API endpoint answers wherever github.com is reachable.
-$SourceUrls = if ($env:FFF_SKILL_URL) { @($env:FFF_SKILL_URL) } else { @(
-        'https://api.github.com/repos/zeelinkCN/FFF-skill/contents/SKILL.md',
-        'https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/SKILL.md'
-    ) }
-$SourceAccept = 'application/vnd.github.raw'
+# for example:  irm https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/install.ps1 | iex
+$SourceUrl = if ($env:FFF_SKILL_URL) { $env:FFF_SKILL_URL }
+else { 'https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/SKILL.md' }
 
 $source = if ($PSScriptRoot) { Join-Path $PSScriptRoot 'SKILL.md' } else { 'SKILL.md' }
 if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
-    $target = Join-Path ([System.IO.Path]::GetTempPath()) 'fff-skill.SKILL.md'
-    $downloaded = $false
-    $hasCurl = [bool](Get-Command curl.exe -ErrorAction SilentlyContinue)
-    foreach ($url in $SourceUrls) {
-        Write-Host "SKILL.md not found locally - downloading $url" -ForegroundColor DarkGray
-        if ($hasCurl) {
-            # curl.exe rather than Invoke-WebRequest: .NET's HttpClient is the part that stalls here.
-            & curl.exe -fsSL -H "Accept: $SourceAccept" --connect-timeout 8 --max-time 45 -o $target $url
-            if ($LASTEXITCODE -eq 0 -and (Test-Path -LiteralPath $target -PathType Leaf)) { $downloaded = $true; break }
-        }
-        else {
-            try {
-                Invoke-WebRequest -Uri $url -Headers @{ Accept = $SourceAccept } -OutFile $target -TimeoutSec 30
-                $downloaded = $true
-                break
-            }
-            catch { Write-Host "  failed: $($_.Exception.Message)" -ForegroundColor Yellow }
-        }
-    }
-    if (-not $downloaded) { throw "could not download SKILL.md from any of: $($SourceUrls -join ', ')" }
-    $source = $target
+    Write-Host "SKILL.md not found locally - downloading $SourceUrl" -ForegroundColor DarkGray
+    $source = Join-Path ([System.IO.Path]::GetTempPath()) 'fff-skill.SKILL.md'
+    Invoke-WebRequest -Uri $SourceUrl -OutFile $source
 }
 
 $homes = [ordered]@{
