@@ -11,13 +11,13 @@
 set -eu
 
 # Where to fetch SKILL.md from when this script runs without the repo next to it,
-# for example:  curl -fsSL https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/install.sh | sh
-# Official raw first, then the jsDelivr mirror (raw is often unreachable from CN networks).
+# for example:  curl -fsSL https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@v1.0.2/install.sh | sh
+# jsDelivr first: it is a global CDN and stays reachable where raw.githubusercontent.com is blocked.
 if [ -n "${FFF_SKILL_URL:-}" ]; then
     src_urls="$FFF_SKILL_URL"
 else
-    src_urls="https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/SKILL.md
-https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/SKILL.md"
+    src_urls="https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/SKILL.md
+https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/SKILL.md"
 fi
 
 src="$(cd "$(dirname "$0")" 2>/dev/null && pwd || echo .)/SKILL.md"
@@ -27,9 +27,9 @@ if [ ! -f "$src" ]; then
     for url in $src_urls; do
         echo "SKILL.md not found locally - downloading $url" >&2
         if command -v curl >/dev/null 2>&1; then
-            if curl -fsSL --connect-timeout 15 --max-time 120 "$url" -o "$tmp"; then ok=1; break; fi
+            if curl -fsSL --connect-timeout 8 --max-time 45 "$url" -o "$tmp"; then ok=1; break; fi
         elif command -v wget >/dev/null 2>&1; then
-            if wget -qO "$tmp" "$url"; then ok=1; break; fi
+            if wget -qO "$tmp" --timeout=8 --tries=1 "$url"; then ok=1; break; fi
         else
             echo "need curl or wget to download SKILL.md" >&2
             exit 1

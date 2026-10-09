@@ -57,16 +57,16 @@ AI   就是让电脑自己定时打开这个脚本，不用你点。
 Windows PowerShell：
 
 ```powershell
-irm https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@v1.0.1/install.ps1 | iex
+irm https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@v1.0.2/install.ps1 | iex
 ```
 
 macOS / Linux / WSL：
 
 ```sh
-curl -fsSL https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@v1.0.1/install.sh | sh
+curl -fsSL https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@v1.0.2/install.sh | sh
 ```
 
-走 jsDelivr 镜像是因为 GitHub 官方的 `raw.githubusercontent.com` 在国内经常连不上；地址里的 `@v1.0.1` 是一个 tag，内容是固定的，不会被 CDN 缓存成旧版本。想跟最新就把它换成 `@main`，网络通畅时也可以整体换成官方地址 `https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/`——脚本内部去取 `SKILL.md` 时也会自己按「官方 → 镜像」的顺序重试。
+走 jsDelivr 镜像是因为 GitHub 官方的 `raw.githubusercontent.com` 在国内经常连不上；地址里的 `@v1.0.2` 是一个 tag，内容是固定的，不会被 CDN 缓存成旧版本。想跟最新就把它换成 `@main`，网络通畅时也可以整体换成官方地址 `https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/`。脚本内部去取 `SKILL.md` 时也是先试镜像、再试官方。
 
 用 git 克隆也是一行：
 

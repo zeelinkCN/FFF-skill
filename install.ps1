@@ -36,11 +36,11 @@ if ($Only) {
 }
 
 # Where to fetch SKILL.md from when this script runs without the repo next to it,
-# for example:  irm https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/install.ps1 | iex
-# Official raw first, then the jsDelivr mirror (raw is often unreachable from CN networks).
+# for example:  irm https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@v1.0.2/install.ps1 | iex
+# jsDelivr first: it is a global CDN and stays reachable where raw.githubusercontent.com is blocked.
 $SourceUrls = if ($env:FFF_SKILL_URL) { @($env:FFF_SKILL_URL) } else { @(
-        'https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/SKILL.md',
-        'https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/SKILL.md'
+        'https://cdn.jsdelivr.net/gh/zeelinkCN/FFF-skill@main/SKILL.md',
+        'https://raw.githubusercontent.com/zeelinkCN/FFF-skill/main/SKILL.md'
     ) }
 
 $source = if ($PSScriptRoot) { Join-Path $PSScriptRoot 'SKILL.md' } else { 'SKILL.md' }
@@ -51,13 +51,13 @@ if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
     foreach ($url in $SourceUrls) {
         Write-Host "SKILL.md not found locally - downloading $url" -ForegroundColor DarkGray
         if ($hasCurl) {
-            # curl.exe first: .NET's HttpClient is the part that stalls on some networks.
-            & curl.exe -fsSL --connect-timeout 15 --max-time 120 -o $target $url
+            # curl.exe rather than Invoke-WebRequest: .NET's HttpClient is the part that stalls here.
+            & curl.exe -fsSL --connect-timeout 8 --max-time 45 -o $target $url
             if ($LASTEXITCODE -eq 0 -and (Test-Path -LiteralPath $target -PathType Leaf)) { $downloaded = $true; break }
         }
-        if (-not $downloaded) {
+        else {
             try {
-                Invoke-WebRequest -Uri $url -OutFile $target -TimeoutSec 60
+                Invoke-WebRequest -Uri $url -OutFile $target -TimeoutSec 30
                 $downloaded = $true
                 break
             }
