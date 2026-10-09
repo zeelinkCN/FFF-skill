@@ -1,0 +1,9 @@
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / local overrides
+*.local.md
+.vscode/
+.idea/
