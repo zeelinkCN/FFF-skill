@@ -103,6 +103,8 @@ To share it with a team, commit it to `.claude/skills/fff/` or `.codex/skills/ff
 - **On**: `/fff on` (also `开` / `enable`; a bare `/fff` means on).
 - **Off**: `/fff off` (also `关` / `关掉傻子模式` / `正常模式` / `退出` / `0`). Turning it off exits cleanly and restores the agent's normal verbosity.
 - **Follow your bandwidth**: brain clear → `/fff off`; tired again → `/fff on`. You can also just say "fool mode" / "stop flooding me" / "I'm out of brain". When it is unsure, it asks once (on / off) instead of switching silently.
+- **It never switches itself on**: if it merely detects the need — you mention brain fog, or say "not clear" twice — it pops a question first: `开启` / `先解释一下` / `不用`. Pick "不用" and the topic is dropped for the rest of the conversation. **Loading the skill is not turning it on.**
+- **Report gate**: when a finished task needs a long report, it gives a one-line result first, then asks how you want it — `逐条讲` point by point, `一次性汇报` all at once, or `只看结论` conclusion only. Point by point means one point per message, each awaiting your confirmation; all at once lifts the length limit for that one message and returns to FFF immediately after.
 - **Answer**: click the popup — `Got it, next` / `Not clear, simpler` / `Not clear, reword` / `Not clear, in detail`. Only when the host has no question tool does it fall back to numbered text (`1`–`4`, `0` to exit). You can always type freely; the options are not mandatory.
 - **Exit**: type `0` / `退出` / `关` / `/fff off`, or use the popup's free-text field (`custom` in DSH, `other` in Codex). On DSH the popup also carries an extra `退出傻子模式` button.
 - **One-off expansion**: pick "in detail" or say "explain fully" — it expands that once, then returns to FFF.
@@ -135,6 +137,7 @@ Common edits:
 ## Why it is built this way
 
 - **Click, don't type**: it takes "how should I reply" out of your head. Native question UIs instead of `1 2 3` written into the body — markdown flattens those onto one line, and you still have to type.
+- **You own the switch**: auto-triggering only proposes; it never switches. Even a report that would swallow a lot of information gets a question about how you want to hear it first.
 - **No branch, no question**: progress notes and wrap-ups — messages where every possible reply leads to the same place — simply end. No button whose only sensible option is "ok". The test is written into the rules: **if every answer leads to the same next action, there is no branch — do not ask.**
 - **Four fixed answers**: understood / not understood, simpler / not understood, reword / not understood, in detail. Separating those kinds of "not understood" matters: the first needs the sentence split smaller, the second needs a different metaphor, and the third genuinely wants depth — which deserves a lifted length limit instead of being squeezed into 3 lines.
 - **Tool or text, never both**: the rules pin down one form per segment, so the agent cannot pop a dialog and also list the options in prose.
